@@ -1,0 +1,514 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="theme-color" content="#1C0E07">
+  <meta name="robots" content="noindex, nofollow">
+  <title>Mr Creamy · Admin</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;1,400;1,500&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-database-compat.js"></script>
+  <style>
+    *,*::before,*::after { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+
+    :root {
+      --bg:      #F4EAD8;
+      --surface: #FFFFFF;
+      --ink:     #1C0E07;
+      --caramel: #B85C28;
+      --muted:   rgba(28,14,7,0.40);
+      --faint:   rgba(28,14,7,0.20);
+      --line:    rgba(28,14,7,0.08);
+      --green:   #2A9B54;
+    }
+
+    html, body {
+      height: 100%; height: 100dvh; overflow: hidden;
+      background: var(--bg);
+      font-family: 'Inter', -apple-system, sans-serif;
+      color: var(--ink); -webkit-font-smoothing: antialiased;
+    }
+
+    /* ══ PIN SCREEN ══════════════════════════════════════ */
+    .pin-screen {
+      position: fixed; inset: 0; z-index: 100; background: var(--bg);
+      display: flex; align-items: center; justify-content: center;
+      padding: 32px 24px; transition: opacity .3s;
+    }
+    .pin-card {
+      width: 100%; max-width: 310px;
+      display: flex; flex-direction: column; align-items: center;
+    }
+    .pin-logo {
+      width: 72px; height: 72px; object-fit: contain;
+      filter: drop-shadow(0 8px 20px rgba(28,14,7,.12));
+      margin-bottom: 10px;
+    }
+    .pin-eyebrow {
+      font-size: 10px; font-weight: 700; letter-spacing: 2px;
+      text-transform: uppercase; color: var(--caramel); margin-bottom: 4px;
+    }
+    .pin-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 30px; font-weight: 500; color: var(--ink); margin-bottom: 32px;
+    }
+    .pin-dots {
+      display: flex; gap: 14px; margin-bottom: 32px;
+    }
+    .pin-dot {
+      width: 13px; height: 13px; border-radius: 50%;
+      border: 2px solid rgba(28,14,7,.18);
+      transition: all .18s cubic-bezier(.4,0,.2,1);
+    }
+    .pin-dot.filled { background: var(--ink); border-color: var(--ink); transform: scale(1.12); }
+    @keyframes pinShake {
+      0%,100%{transform:translateX(0)} 18%{transform:translateX(-9px)}
+      36%{transform:translateX(9px)}  54%{transform:translateX(-5px)} 72%{transform:translateX(5px)}
+    }
+    .pin-dots.shake { animation: pinShake .48s ease; }
+
+    .pin-pad {
+      display: grid; grid-template-columns: repeat(3, 1fr);
+      gap: 10px; width: 100%;
+    }
+    .pin-btn {
+      height: 68px; border: none; border-radius: 20px;
+      background: var(--surface); color: var(--ink);
+      font-size: 22px; font-weight: 400; cursor: pointer;
+      font-family: 'Inter', sans-serif;
+      box-shadow: 0 1px 3px rgba(28,14,7,.06), 0 4px 14px rgba(28,14,7,.05);
+      transition: transform .1s, box-shadow .1s;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .pin-btn:active { transform: scale(.9); box-shadow: 0 1px 2px rgba(28,14,7,.04); }
+    .pin-del { background: rgba(28,14,7,.06); box-shadow: none; }
+
+    /* ══ ADMIN LAYOUT ════════════════════════════════════ */
+    .admin {
+      display: flex; flex-direction: column;
+      height: 100dvh; overflow: hidden;
+    }
+
+    /* Header */
+    .adm-hdr {
+      background: var(--ink); flex-shrink: 0;
+      padding: calc(env(safe-area-inset-top,0px) + 16px) 20px 16px;
+      display: flex; justify-content: space-between; align-items: flex-end;
+    }
+    .adm-eyebrow {
+      font-size: 10px; font-weight: 700; letter-spacing: 1.6px;
+      text-transform: uppercase; color: rgba(250,246,240,.32); margin-bottom: 5px;
+    }
+    .adm-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 26px; font-weight: 500; color: rgba(250,246,240,.95);
+    }
+    .adm-clock {
+      font-size: 22px; font-weight: 300;
+      color: rgba(250,246,240,.45); font-variant-numeric: tabular-nums;
+    }
+
+    /* Stats */
+    .adm-stats {
+      display: flex; gap: 10px;
+      padding: 14px 16px 6px; flex-shrink: 0;
+    }
+    .stat-card {
+      flex: 1; padding: 13px 10px 11px;
+      border-radius: 16px; text-align: center;
+      background: var(--surface);
+      box-shadow: 0 1px 3px rgba(28,14,7,.05);
+    }
+    .stat-card.s-pending   { background: rgba(184,92,40,.09); }
+    .stat-card.s-delivered { background: rgba(42,155,84,.09); }
+    .stat-n {
+      display: block; font-family: 'Cormorant Garamond', serif;
+      font-size: 30px; font-weight: 500; line-height: 1; color: var(--ink);
+    }
+    .stat-l {
+      display: block; font-size: 10px; font-weight: 600;
+      color: var(--muted); margin-top: 5px; letter-spacing: .3px;
+    }
+
+    /* Order list */
+    .order-list {
+      flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch;
+      overscroll-behavior: contain; scrollbar-width: none;
+      padding: 12px 16px calc(env(safe-area-inset-bottom,0px) + 28px);
+      display: flex; flex-direction: column; gap: 12px;
+    }
+    .order-list::-webkit-scrollbar { display: none; }
+
+    .empty-state {
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      gap: 8px; padding: 60px 0; color: var(--muted); text-align: center;
+    }
+    .empty-ico { font-size: 42px; opacity: .35; }
+    .empty-state p { font-size: 15px; }
+
+    /* ══ ORDER CARD ══════════════════════════════════════ */
+    .order-card {
+      background: var(--surface); border-radius: 20px; overflow: hidden;
+      box-shadow: 0 1px 3px rgba(28,14,7,.05), 0 4px 16px rgba(28,14,7,.04);
+      transition: opacity .3s;
+    }
+    .order-card.status-delivered { opacity: .6; }
+    .order-card.status-cancelled { opacity: .38; }
+
+    .o-head {
+      display: flex; justify-content: space-between; align-items: flex-start;
+      padding: 15px 16px 12px;
+    }
+    .o-name  { font-size: 16px; font-weight: 700; color: var(--ink); }
+    .o-phone { font-size: 12.5px; color: var(--muted); margin-top: 2px; }
+    .o-right { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; }
+    .o-badge {
+      font-size: 10px; font-weight: 700; letter-spacing: .6px;
+      text-transform: uppercase; padding: 4px 10px; border-radius: 50px;
+    }
+    .status-pending   .o-badge { background: rgba(184,92,40,.12); color: var(--caramel); }
+    .status-delivered .o-badge { background: rgba(42,155,84,.12);  color: var(--green); }
+    .status-cancelled .o-badge { background: rgba(28,14,7,.07);    color: var(--muted); }
+    .o-ago { font-size: 11px; color: var(--faint); }
+
+    .o-sep { height: 1px; background: var(--line); }
+
+    .o-items { padding: 11px 16px 9px; }
+    .o-item {
+      display: flex; justify-content: space-between;
+      font-size: 13.5px; color: var(--ink); padding: 3px 0;
+    }
+    .o-item-price { color: var(--muted); font-weight: 500; }
+
+    .o-total-row {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 7px 16px 11px; font-size: 12px; color: var(--muted);
+    }
+    .o-total-val {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 20px; font-weight: 500; color: var(--ink);
+    }
+
+    .o-info { padding: 11px 16px 13px; }
+    .o-mode-row { font-size: 14px; font-weight: 600; color: var(--ink); }
+    .o-addr-row { font-size: 13px; color: var(--muted); margin-top: 3px; }
+    .o-date-row { font-size: 12px; color: var(--faint); margin-top: 3px; }
+
+    .o-actions { display: flex; gap: 8px; padding: 10px 12px 12px; }
+    .o-btn {
+      flex: 1; padding: 12px 6px; border: none; border-radius: 13px;
+      font-size: 13px; font-weight: 600; cursor: pointer; font-family: inherit;
+      display: flex; align-items: center; justify-content: center; gap: 5px;
+      transition: transform .12s, opacity .12s;
+    }
+    .o-btn:active { transform: scale(.93); }
+    .o-btn-maps   { background: rgba(28,14,7,.07); color: var(--ink); }
+    .o-btn-done   { background: rgba(42,155,84,.10); color: var(--green); }
+    .o-btn-cancel { background: rgba(184,92,40,.08); color: var(--caramel); }
+    .o-done-lbl   { display: block; padding: 12px 16px; font-size: 13px; color: var(--muted); font-style: italic; }
+
+    /* Setup warning */
+    .setup-warn {
+      padding: 18px; border-radius: 16px;
+      background: rgba(229,57,53,.08); border: 1px solid rgba(229,57,53,.20);
+      font-size: 13px; color: #C62828; line-height: 1.65;
+    }
+    .setup-warn strong { display: block; font-size: 14px; margin-bottom: 6px; }
+    .setup-warn code { background: rgba(198,40,40,.1); padding: 1px 6px; border-radius: 4px; font-size: 12px; }
+  </style>
+</head>
+<body>
+
+<!-- ══════════════════════════════════════════════════════
+     PIN SCREEN
+══════════════════════════════════════════════════════ -->
+<div class="pin-screen" id="pin-screen">
+  <div class="pin-card">
+    <img class="pin-logo" src="public/ChatGPT Image 12 mai 2026, 15_36_33.png" alt="Mr Creamy">
+    <p class="pin-eyebrow">Espace admin</p>
+    <h1 class="pin-title"><em>Mr Creamy</em></h1>
+    <div class="pin-dots" id="pin-dots">
+      <div class="pin-dot" id="pd0"></div>
+      <div class="pin-dot" id="pd1"></div>
+      <div class="pin-dot" id="pd2"></div>
+      <div class="pin-dot" id="pd3"></div>
+    </div>
+    <div class="pin-pad">
+      <button class="pin-btn" onclick="pp('1')">1</button>
+      <button class="pin-btn" onclick="pp('2')">2</button>
+      <button class="pin-btn" onclick="pp('3')">3</button>
+      <button class="pin-btn" onclick="pp('4')">4</button>
+      <button class="pin-btn" onclick="pp('5')">5</button>
+      <button class="pin-btn" onclick="pp('6')">6</button>
+      <button class="pin-btn" onclick="pp('7')">7</button>
+      <button class="pin-btn" onclick="pp('8')">8</button>
+      <button class="pin-btn" onclick="pp('9')">9</button>
+      <div></div>
+      <button class="pin-btn" onclick="pp('0')">0</button>
+      <button class="pin-btn pin-del" onclick="pdel()">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 4H8l-7 8 7 8h13a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2z"/><line x1="18" y1="9" x2="12" y2="15"/><line x1="12" y1="9" x2="18" y2="15"/></svg>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════
+     ADMIN PANEL
+══════════════════════════════════════════════════════ -->
+<div class="admin" id="admin" style="display:none">
+
+  <header class="adm-hdr">
+    <div>
+      <p class="adm-eyebrow">Tableau de bord</p>
+      <h1 class="adm-title"><em>Mr Creamy</em></h1>
+    </div>
+    <div class="adm-clock" id="adm-clock">--:--</div>
+  </header>
+
+  <div class="adm-stats">
+    <div class="stat-card s-pending">
+      <span class="stat-n" id="n-pending">0</span>
+      <span class="stat-l">En attente</span>
+    </div>
+    <div class="stat-card s-delivered">
+      <span class="stat-n" id="n-delivered">0</span>
+      <span class="stat-l">Livrés</span>
+    </div>
+    <div class="stat-card">
+      <span class="stat-n" id="n-total">0</span>
+      <span class="stat-l">Total</span>
+    </div>
+  </div>
+
+  <div class="order-list" id="order-list">
+    <div class="empty-state" id="empty-state">
+      <div class="empty-ico">📦</div>
+      <p>Aucune commande pour le moment</p>
+    </div>
+  </div>
+
+</div>
+
+<script>
+/* ── CONFIG ──────────────────────────────────────────────
+   ① Changez le code PIN (4 chiffres)
+   ② Collez votre config Firebase (même que dans index.html)
+   Dans Firebase → Realtime Database → Règles :
+   { "rules": { ".read": true, ".write": true } }
+─────────────────────────────────────────────────────── */
+const ADMIN_PIN = '2016';
+
+const FB_CONFIG = {
+  apiKey:            "AIzaSyAYX3bZdeYR8EspzcuVMCTq6FJ1On-pHoI",
+  authDomain:        "mrcream-bf88b.firebaseapp.com",
+  databaseURL:       "https://mrcream-bf88b-default-rtdb.europe-west1.firebasedatabase.app",
+  projectId:         "mrcream-bf88b",
+  storageBucket:     "mrcream-bf88b.firebasestorage.app",
+  messagingSenderId: "958147198961",
+  appId:             "1:958147198961:web:c874f2ee58b2d723d78e50"
+};
+
+/* ── PIN ─────────────────────────────────────────────── */
+let pinVal = '';
+
+function pp(n) {
+  if (pinVal.length >= 4) return;
+  pinVal += n;
+  updateDots();
+  if (pinVal.length === 4) setTimeout(checkPin, 160);
+}
+function pdel() { pinVal = pinVal.slice(0, -1); updateDots(); }
+function updateDots() {
+  for (let i = 0; i < 4; i++)
+    document.getElementById('pd'+i).classList.toggle('filled', i < pinVal.length);
+}
+function checkPin() {
+  if (pinVal === ADMIN_PIN) {
+    const ps = document.getElementById('pin-screen');
+    ps.style.opacity = '0';
+    setTimeout(() => { ps.style.display = 'none'; }, 300);
+    document.getElementById('admin').style.display = 'flex';
+    initAdmin();
+  } else {
+    const dots = document.getElementById('pin-dots');
+    for (let i = 0; i < 4; i++) {
+      const d = document.getElementById('pd'+i);
+      d.style.background = '#E53935'; d.style.borderColor = '#E53935';
+    }
+    dots.classList.remove('shake');
+    void dots.offsetWidth;
+    dots.classList.add('shake');
+    navigator.vibrate && navigator.vibrate([80, 40, 80]);
+    setTimeout(() => {
+      pinVal = ''; updateDots();
+      for (let i = 0; i < 4; i++) {
+        const d = document.getElementById('pd'+i);
+        d.style.background = ''; d.style.borderColor = '';
+      }
+    }, 600);
+  }
+}
+
+/* ── ADMIN ───────────────────────────────────────────── */
+let admDB = null;
+const cache = {};
+
+function initAdmin() {
+  updateClock();
+  setInterval(updateClock, 1000);
+
+  if (FB_CONFIG.databaseURL.includes('VOTRE')) {
+    document.getElementById('empty-state').style.display = 'none';
+    document.getElementById('order-list').insertAdjacentHTML('afterbegin', `
+      <div class="setup-warn">
+        <strong>⚙️ Configuration Firebase requise</strong>
+        Ouvrez <code>admin.html</code> et <code>index.html</code>,
+        remplacez <code>FB_CONFIG</code> par votre config Firebase.<br><br>
+        Ensuite dans Firebase Console → Realtime Database → Règles,
+        mettez <code>".read": true, ".write": true</code>.
+      </div>`);
+    return;
+  }
+
+  try {
+    firebase.initializeApp(FB_CONFIG);
+    admDB = firebase.database();
+  } catch(e) {
+    document.getElementById('order-list').innerHTML =
+      `<div class="setup-warn"><strong>Erreur</strong>${e.message}</div>`;
+    return;
+  }
+
+  admDB.ref('orders').orderByChild('ts').on('value', snap => {
+    const orders = [];
+    snap.forEach(child => {
+      cache[child.key] = child.val();
+      orders.push({ key: child.key, ...child.val() });
+    });
+    orders.reverse();
+    renderOrders(orders);
+    updateStats(orders);
+    updateTimeAgo();
+  });
+
+  setInterval(updateTimeAgo, 30000);
+}
+
+function updateClock() {
+  const now = new Date();
+  document.getElementById('adm-clock').textContent =
+    now.toLocaleTimeString('fr-BE', { hour: '2-digit', minute: '2-digit' });
+}
+
+function updateStats(orders) {
+  document.getElementById('n-pending').textContent   = orders.filter(o => o.status === 'pending').length;
+  document.getElementById('n-delivered').textContent = orders.filter(o => o.status === 'delivered').length;
+  document.getElementById('n-total').textContent     = orders.length;
+}
+
+function timeAgo(ts) {
+  const m = Math.floor((Date.now() - ts) / 60000);
+  if (m < 1)  return "à l'instant";
+  if (m < 60) return `il y a ${m} min`;
+  const h = Math.floor(m / 60);
+  if (h < 24) return `il y a ${h}h`;
+  return `il y a ${Math.floor(h / 24)}j`;
+}
+
+function updateTimeAgo() {
+  document.querySelectorAll('.o-ago[data-ts]').forEach(el => {
+    el.textContent = timeAgo(parseInt(el.dataset.ts));
+  });
+}
+
+function fmtP(n) { return Number(n).toFixed(2).replace('.', ',') + ' €'; }
+
+function renderOrders(orders) {
+  const list  = document.getElementById('order-list');
+  const empty = document.getElementById('empty-state');
+  list.querySelectorAll('.order-card').forEach(c => c.remove());
+
+  if (orders.length === 0) { empty.style.display = 'flex'; return; }
+  empty.style.display = 'none';
+
+  orders.forEach(o => {
+    const card = document.createElement('div');
+    card.className = `order-card status-${o.status}`;
+    card.id = 'card-' + o.key;
+
+    const items  = o.items || [];
+    const total  = o.total ?? items.reduce((s, i) => s + (i.subtotal || 0), 0);
+    const badges = { pending: 'En attente', delivered: 'Livré', cancelled: 'Annulé' };
+    const modeIco = o.mode === 'livraison' ? '🛵' : '🛍️';
+
+    const itemsHTML = items.map(i =>
+      `<div class="o-item">
+        <span>${i.name} × ${i.qty}</span>
+        <span class="o-item-price">${fmtP(i.subtotal)}</span>
+      </div>`
+    ).join('');
+
+    const addrHTML = o.mode === 'livraison' && o.address
+      ? `<div class="o-addr-row">${o.address}${o.time ? ' · ' + o.time : ''}</div>` : '';
+
+    const mapsBtn = o.mode === 'livraison'
+      ? `<button class="o-btn o-btn-maps" onclick="goMaps('${o.key}')">
+           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polygon points="3 11 22 2 13 21 11 13 3 11"/></svg>
+           Maps
+         </button>` : '';
+
+    const actionsHTML = o.status === 'pending'
+      ? `${mapsBtn}
+         <button class="o-btn o-btn-done"   onclick="setStatus('${o.key}','delivered')">✓ Livré</button>
+         <button class="o-btn o-btn-cancel" onclick="setStatus('${o.key}','cancelled')">✗ Annuler</button>`
+      : `<span class="o-done-lbl">${badges[o.status]} ${o.status === 'delivered' ? '✓' : '✗'}</span>`;
+
+    card.innerHTML = `
+      <div class="o-head">
+        <div>
+          <div class="o-name">${o.name}</div>
+          <div class="o-phone">${o.phone}</div>
+        </div>
+        <div class="o-right">
+          <span class="o-badge">${badges[o.status]}</span>
+          <span class="o-ago" data-ts="${o.ts}">${timeAgo(o.ts)}</span>
+        </div>
+      </div>
+      <div class="o-sep"></div>
+      <div class="o-items">${itemsHTML}</div>
+      <div class="o-total-row">
+        <span>Total commande</span>
+        <span class="o-total-val">${fmtP(total)}</span>
+      </div>
+      <div class="o-sep"></div>
+      <div class="o-info">
+        <div class="o-mode-row">${modeIco} ${o.mode === 'livraison' ? o.city : 'Houdeng-Goegnies'}</div>
+        ${addrHTML}
+        <div class="o-date-row">${o.date}</div>
+      </div>
+      <div class="o-sep"></div>
+      <div class="o-actions">${actionsHTML}</div>`;
+
+    list.appendChild(card);
+  });
+}
+
+function setStatus(key, status) {
+  if (admDB) admDB.ref('orders/' + key).update({ status });
+}
+
+function goMaps(key) {
+  const o = cache[key];
+  if (!o || !o.address) return;
+  const q = encodeURIComponent(o.address + ', ' + o.city + ', Belgique');
+  window.open('https://maps.google.com/?q=' + q, '_blank');
+}
+</script>
+</body>
+</html>
