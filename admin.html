@@ -200,17 +200,17 @@
     .o-addr-row { font-size: 13px; color: var(--muted); margin-top: 3px; }
     .o-date-row { font-size: 12px; color: var(--faint); margin-top: 3px; }
 
-    .o-actions { display: flex; gap: 8px; padding: 10px 12px 12px; }
+    .o-actions { display: flex; gap: 8px; padding: 10px 12px 14px; flex-wrap: wrap; }
     .o-btn {
-      flex: 1; padding: 12px 6px; border: none; border-radius: 13px;
+      flex: 1; min-width: 80px; padding: 14px 8px; border: none; border-radius: 14px;
       font-size: 13px; font-weight: 600; cursor: pointer; font-family: inherit;
       display: flex; align-items: center; justify-content: center; gap: 5px;
-      transition: transform .12s, opacity .12s;
+      transition: transform .12s, opacity .12s; -webkit-tap-highlight-color: transparent;
     }
     .o-btn:active { transform: scale(.93); }
     .o-btn-maps   { background: rgba(28,14,7,.07); color: var(--ink); }
-    .o-btn-done   { background: rgba(42,155,84,.10); color: var(--green); }
-    .o-btn-cancel { background: rgba(184,92,40,.08); color: var(--caramel); }
+    .o-btn-done   { background: rgba(42,155,84,.13); color: var(--green); }
+    .o-btn-cancel { background: rgba(184,92,40,.10); color: var(--caramel); }
     .o-done-lbl   { display: block; padding: 12px 16px; font-size: 13px; color: var(--muted); font-style: italic; }
 
     /* Setup warning */

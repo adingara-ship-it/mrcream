@@ -274,11 +274,11 @@
     }
 
     .logo-img {
-      width: min(170px, 44vw); height: min(170px, 44vw);
+      width: min(148px, 38vw); height: min(148px, 38vw);
       object-fit: contain;
       animation: logoFloat 5s ease-in-out infinite;
-      filter: drop-shadow(0 16px 40px rgba(28,14,7,.12));
-      margin-bottom: 12px;
+      filter: drop-shadow(0 12px 32px rgba(28,14,7,.12));
+      margin-bottom: 8px;
     }
     @keyframes logoFloat {
       0%,100% { transform: translateY(0); }
@@ -287,18 +287,18 @@
 
     /* ── SCENE REEL (motion design) ─────────────────────── */
     .scene-reel {
-      width: min(310px, 84vw);
-      display: flex; flex-direction: column; align-items: center; gap: 14px;
+      width: min(310px, 88vw);
+      display: flex; flex-direction: column; align-items: center; gap: 11px;
     }
     .sr-card {
       width: 100%;
       background: rgba(255,255,255,.82);
       backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
-      border-radius: 26px; padding: 22px 20px 20px;
+      border-radius: 24px; padding: 17px 18px 15px;
       border: 1px solid rgba(255,255,255,.96);
       box-shadow: 0 2px 12px rgba(28,14,7,.06), 0 10px 30px rgba(28,14,7,.05);
       display: flex; flex-direction: column; align-items: center;
-      text-align: center; gap: 9px;
+      text-align: center; gap: 7px;
       transition: opacity .30s ease, transform .50s cubic-bezier(.34,1.56,.64,1);
     }
     .sr-num {
@@ -307,8 +307,8 @@
       transition: opacity .28s ease, transform .28s ease;
     }
     .sr-icon {
-      font-size: 52px; line-height: 1;
-      filter: drop-shadow(0 6px 18px rgba(28,14,7,.13));
+      font-size: 44px; line-height: 1;
+      filter: drop-shadow(0 5px 14px rgba(28,14,7,.12));
       transition: opacity .54s cubic-bezier(.34,1.56,.64,1) .05s,
                   transform .54s cubic-bezier(.34,1.56,.64,1) .05s;
     }
@@ -361,21 +361,33 @@
       backdrop-filter: blur(24px);
       -webkit-backdrop-filter: blur(24px);
       border-radius: 36px 36px 0 0;
-      padding: 28px 28px calc(env(safe-area-inset-bottom,0px) + 32px);
+      padding: 22px 24px calc(env(safe-area-inset-bottom,0px) + 24px);
       box-shadow: 0 -1px 0 rgba(28,14,7,.05), 0 -8px 32px rgba(28,14,7,.06);
     }
     .wlc-eyebrow {
       font-size: 11px; font-weight: 600; letter-spacing: 1.2px;
-      text-transform: uppercase; color: var(--caramel); margin-bottom: 10px;
+      text-transform: uppercase; color: var(--caramel); margin-bottom: 8px;
     }
     .wlc-h1 {
       font-family: 'Cormorant Garamond', serif;
-      font-size: 34px; font-weight: 500; line-height: 1.1;
-      letter-spacing: -.5px; color: var(--ink); margin-bottom: 8px;
+      font-size: 30px; font-weight: 500; line-height: 1.1;
+      letter-spacing: -.5px; color: var(--ink); margin-bottom: 6px;
     }
     .wlc-tag {
-      font-size: 13.5px; color: var(--muted); line-height: 1.65;
-      margin-bottom: 18px; font-weight: 400;
+      font-size: 13px; color: var(--muted); line-height: 1.55;
+      margin-bottom: 14px; font-weight: 400;
+    }
+
+    @media (max-height: 700px) {
+      .logo-img { width: min(118px, 30vw) !important; height: min(118px, 30vw) !important; margin-bottom: 6px !important; }
+      .sr-card { padding: 13px 16px 11px !important; gap: 5px !important; }
+      .sr-icon { font-size: 36px !important; }
+      .sr-title { font-size: 17px !important; }
+      .wlc-btm { padding: 16px 22px calc(env(safe-area-inset-bottom,0px) + 16px) !important; }
+      .wlc-h1 { font-size: 26px !important; margin-bottom: 4px !important; }
+      .wlc-tag { margin-bottom: 10px !important; font-size: 12px !important; }
+      .tiktok-link { padding: 9px 14px !important; margin-bottom: 8px !important; }
+      .btn-cta { padding: 14px 20px !important; }
     }
 
     .tiktok-link {
@@ -620,7 +632,7 @@
     <div class="wlc-btm">
       <p class="wlc-eyebrow">Tiramisu Artisanal · Houdeng</p>
       <h1 class="wlc-h1">Bienvenue chez<br><em>Mr Creamy</em></h1>
-      <p class="wlc-tag">Cinq parfums gourmands, faits maison avec passion.<br>Retrait ou livraison, commandez en 30 secondes.</p>
+      <p class="wlc-tag">Cinq parfums gourmands faits maison avec passion. Retrait ou livraison, commandez en 30 secondes.</p>
       <a class="tiktok-link" href="https://www.tiktok.com/@mr.creamy43?_r=1&_t=ZG-96Wu5ReAqsi" target="_blank" rel="noopener">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M19.59 6.69a4.83 4.83 0 01-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 01-2.88 2.5 2.89 2.89 0 01-2.89-2.89 2.89 2.89 0 012.89-2.89c.28 0 .54.04.79.1V9.01a6.33 6.33 0 00-.79-.05 6.34 6.34 0 00-6.34 6.34 6.34 6.34 0 006.34 6.34 6.34 6.34 0 006.33-6.34V8.75a8.17 8.17 0 004.78 1.52V6.82a4.85 4.85 0 01-1.01-.13z"/></svg>
         Suivez-nous sur TikTok
