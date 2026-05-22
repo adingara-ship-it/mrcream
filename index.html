@@ -298,14 +298,14 @@
     /* ══════════════════════════════════════════════════════
        S0 — WELCOME
     ══════════════════════════════════════════════════════ */
-    #s0 { background: transparent; padding: 0; overflow-y: auto; overflow-x: hidden; -webkit-overflow-scrolling: touch; }
+    #s0 { background: transparent; padding: 0; overflow: hidden; }
 
     .s0-inner {
-      width: 100%; min-height: 100%;
+      width: 100%; height: 100%;
       display: flex; flex-direction: column;
       padding:
         calc(env(safe-area-inset-top,0px) + 20px) 0
-        calc(env(safe-area-inset-bottom,0px) + 48px);
+        calc(env(safe-area-inset-bottom,0px) + 32px);
     }
 
     /* Photos zone */
@@ -391,7 +391,7 @@
       margin-bottom: 6px; gap: 8px;
     }
     .s0-logo {
-      width: 96px; height: 96px;
+      width: 112px; height: 112px;
       object-fit: contain;
       mix-blend-mode: multiply;
     }
@@ -502,7 +502,7 @@
     }
     .fc:active { transform: scale(.985); }
 
-    .fc-img { width: 66px; height: 66px; object-fit: contain; border-radius: 10px; flex-shrink: 0; }
+    .fc-img { width: 80px; height: 80px; object-fit: contain; border-radius: 12px; flex-shrink: 0; }
     .fc-info { flex: 1; min-width: 0; }
     .fc-name { font-size: 15px; font-weight: 600; color: var(--ink); }
     .fc-desc { font-size: 12px; color: var(--ink-2); margin-top: 2px; }
@@ -1170,32 +1170,42 @@ function rotateFan() {
   }, 700);
 }
 
+function reverseRotateFan() {
+  const n   = FAN_PHOTOS.length;
+  const lEl = fanImgs.find(i => i.dataset.fp === 'left');
+  const cEl = fanImgs.find(i => i.dataset.fp === 'center');
+  const rEl = fanImgs.find(i => i.dataset.fp === 'right');
+  const sEl = fanImgs.find(i => i.dataset.fp === 'standby');
+  fanIdx = (fanIdx - 1 + n) % n;
+  /* Pré-charge le src du standby qui va devenir 'left' */
+  sEl.src = FAN_PHOTOS[(fanIdx - 1 + n) % n].src;
+  /* Téléporte sEl de l'autre côté (gauche) sans transition */
+  applyPos(sEl, {x:-POS.standby.x, y:POS.standby.y, r:-POS.standby.r, s:POS.standby.s, o:0, z:1, sh:POS.standby.sh, tr:false});
+  /* rEl sort par la droite */
+  applyPos(rEl, {x:-POS.exit.x, y:POS.exit.y, r:-POS.exit.r, s:POS.exit.s, o:0, z:1, sh:POS.exit.sh, tr:true});
+  rEl.dataset.fp = 'exit';
+  applyPos(cEl, POS.right);  cEl.dataset.fp = 'right';
+  applyPos(lEl, POS.center); lEl.dataset.fp = 'center';
+  applyPos(sEl, POS.left);   sEl.dataset.fp = 'left';
+  setTimeout(() => {
+    applyPos(rEl, POS.standby); rEl.dataset.fp = 'standby';
+  }, 700);
+}
+
 document.addEventListener('DOMContentLoaded', () => {
   initFan();
   setInterval(rotateFan, 3200);
 
-  /* Swipe manuel sur les photos */
-  const fanZone = document.getElementById('s0-fan');
+  /* Swipe gauche/droite sur toute la zone S0 */
+  const s0el = document.getElementById('s0');
   let swipeX = null;
-  fanZone.addEventListener('touchstart', e => { swipeX = e.touches[0].clientX; }, { passive: true });
-  fanZone.addEventListener('touchend', e => {
+  s0el.addEventListener('touchstart', e => { swipeX = e.touches[0].clientX; }, { passive: true });
+  s0el.addEventListener('touchend', e => {
     if (swipeX === null) return;
     const dx = e.changedTouches[0].clientX - swipeX;
     swipeX = null;
-    if (Math.abs(dx) > 40) rotateFan();
-  }, { passive: true });
-
-  /* Pull-to-refresh : scroll bas → reload */
-  const s0el = document.getElementById('s0');
-  let ptr_startY = 0, ptr_active = false;
-  s0el.addEventListener('touchstart', e => {
-    ptr_startY = e.touches[0].clientY;
-    ptr_active = (s0el.scrollTop + s0el.clientHeight) >= s0el.scrollHeight - 4;
-  }, { passive: true });
-  s0el.addEventListener('touchend', e => {
-    if (!ptr_active) return;
-    const dy = ptr_startY - e.changedTouches[0].clientY; // positif = scroll vers le haut
-    if (dy > 80) location.reload();
+    if (dx < -40) rotateFan();        // swipe gauche → suivant
+    else if (dx > 40) reverseRotateFan(); // swipe droite → précédent
   }, { passive: true });
 });
 </script>
