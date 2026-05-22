@@ -170,7 +170,7 @@
       display: inline-flex; align-items: center; justify-content: center;
       width: 40px; height: 40px;
       background: rgba(26,13,5,0.06); border: none; border-radius: 50%;
-      color: var(--ink); cursor: pointer; margin-bottom: 18px;
+      color: var(--ink); cursor: pointer; margin-bottom: 12px;
       transition: background .15s, transform .1s; flex-shrink: 0;
     }
     .btn-back:active { background: rgba(26,13,5,0.12); transform: scale(.91); }
@@ -185,7 +185,7 @@
       font-size: 30px; font-weight: 800; line-height: 1.05;
       letter-spacing: -1px; margin-bottom: 4px;
     }
-    .pg-sub { font-size: 14px; color: var(--ink-2); margin-bottom: 24px; }
+    .pg-sub { font-size: 14px; color: var(--ink-2); margin-bottom: 16px; }
 
     /* ── BUTTONS ── */
     .btn-cta {
@@ -440,6 +440,32 @@
       .s0-meta { margin-bottom: 18px; }
     }
 
+    /* ── Small-height responsive (iPhone SE, small Android) ── */
+    @media (max-height: 700px) {
+      #s1, #s2, #s3, #s4 { padding-top: calc(env(safe-area-inset-top,0px) + 38px); }
+      .btn-back { margin-bottom: 8px; }
+      .pg-title { font-size: 26px; }
+      .pg-sub { margin-bottom: 10px; }
+      .nav-btm { padding-top: 10px; }
+      .btn-cta, .btn-wa { padding: 15px 20px; font-size: 15px; }
+      .f-group { margin-bottom: 10px; }
+      .sep { margin: 12px 0; }
+      .seg-btn { padding: 9px 10px; }
+      .fc { padding: 10px 12px; }
+      .fc-img { width: 68px; height: 68px; }
+      .total-row { padding: 16px 18px; margin-bottom: 12px; }
+      .total-val { font-size: 24px; }
+    }
+
+    /* ── Narrow-screen responsive (320px wide) ── */
+    @media (max-width: 360px) {
+      .pg-title { font-size: 26px; }
+      .fc-img { width: 68px; height: 68px; }
+      .fc-name { font-size: 14px; }
+      .qty-btn { width: 30px; height: 30px; font-size: 18px; }
+      .qty-n { min-width: 24px; font-size: 14px; }
+    }
+
     /* ══════════════════════════════════════════════════════
        S1 — NOM + LIVRAISON
     ══════════════════════════════════════════════════════ */
@@ -476,7 +502,7 @@
       transition: opacity .3s;
       box-shadow: 0 4px 14px rgba(26,13,5,0.22);
     }
-    .cart-pill.hidden { opacity: 0; pointer-events: none; }
+    .cart-pill.hidden { display: none; }
 
     .flavor-list { display: flex; flex-direction: column; gap: 10px; }
 
