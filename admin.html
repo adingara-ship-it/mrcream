@@ -505,13 +505,12 @@ function buildCard(o) {
         '<span class="o-ago" data-ts="' + (o.ts || 0) + '">' + timeAgo(o.ts) + '</span>' +
       '</div>' +
     '</div>' +
+    '<div class="o-actions">' + actHtml + '</div>' +
     '<div class="o-sep"></div>' +
     '<div class="o-items">' + itemsHtml + '</div>' +
     '<div class="o-total-row"><span>Total</span><span class="o-total-val">' + fmtP(total) + '</span></div>' +
     '<div class="o-sep"></div>' +
-    '<div class="o-info">' + infoHtml + '</div>' +
-    '<div class="o-sep"></div>' +
-    '<div class="o-actions">' + actHtml + '</div>';
+    '<div class="o-info">' + infoHtml + '</div>';
 
   card.addEventListener('click', function(e) {
     var btn = e.target.closest ? e.target.closest('[data-action]') : null;
