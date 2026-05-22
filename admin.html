@@ -109,7 +109,7 @@
     .pin-del { background: transparent !important; border-color: transparent !important; }
 
     /* ── ADMIN LAYOUT ── */
-    .admin { position: relative; z-index: 1; }
+    .admin { position: relative; z-index: 1; min-height: 100dvh; }
 
     .adm-hdr {
       position: sticky; top: 0; z-index: 10;
@@ -314,7 +314,7 @@ function checkPin() {
     var ps = document.getElementById('pin-screen');
     ps.style.opacity = '0';
     setTimeout(function() { ps.style.display = 'none'; }, 300);
-    document.getElementById('admin').style.display = 'flex';
+    document.getElementById('admin').style.display = 'block';
     initAdmin();
   } else {
     for (var i = 0; i < 4; i++) {
