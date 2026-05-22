@@ -547,97 +547,91 @@ function toArr(v) {
   return Object.values(v);
 }
 
+function esc(s) {
+  return String(s === null || s === undefined ? '' : s)
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+
 function buildCard(o) {
-  const card = document.createElement('div');
-  card.className = 'order-card status-' + o.status;
-  card.id = 'card-' + o.key;
-
-  const items   = toArr(o.items);
-  const total   = o.total ?? items.reduce((s, i) => s + (i.subtotal || 0), 0);
-  const labels  = { pending: 'En attente', delivered: 'Livré', cancelled: 'Annulé' };
-  const modeIco = o.mode === 'livraison' ? '🛵' : '🛍️';
   const k       = o.key;
+  const items   = toArr(o.items);
+  const total   = (o.total != null) ? o.total : items.reduce(function(s, i) { return s + ((i && i.subtotal) || 0); }, 0);
+  const isDeliv = o.mode === 'livraison';
+  const isPend  = o.status === 'pending';
+  const LABELS  = { pending: 'En attente', delivered: 'Livré', cancelled: 'Annulé' };
+  const sLabel  = LABELS[o.status] || o.status || '';
 
-  /* HEAD */
-  const head = document.createElement('div'); head.className = 'o-head';
-  head.innerHTML =
-    '<div><div class="o-name">' + (o.name || '—') + '</div>' +
-    '<div class="o-phone">' + (o.phone || '') + '</div></div>' +
-    '<div class="o-right">' +
-    '<span class="o-badge">' + (labels[o.status] || o.status) + '</span>' +
-    '<span class="o-ago" data-ts="' + o.ts + '">' + timeAgo(o.ts) + '</span></div>';
-  card.appendChild(head);
+  /* ITEMS rows */
+  var itemsHtml = '';
+  for (var ii = 0; ii < items.length; ii++) {
+    var i = items[ii];
+    if (!i) continue;
+    itemsHtml += '<div class="o-item"><span>' + esc(i.name) + ' × ' + esc(i.qty) +
+      '</span><span class="o-item-price">' + fmtP(i.subtotal) + '</span></div>';
+  }
+  if (!itemsHtml) {
+    itemsHtml = '<div class="o-item" style="color:var(--ink-3);font-style:italic">Aucun article enregistré</div>';
+  }
 
-  /* SEP */
-  const sep1 = document.createElement('div'); sep1.className = 'o-sep'; card.appendChild(sep1);
+  /* INFO section */
+  var infoHtml = '<div class="o-mode-row">' +
+    (isDeliv ? '🛵 ' + esc(o.city || 'Livraison') : '🛍️ Retrait · Houdeng-Goegnies') +
+    '</div>';
+  if (isDeliv && o.address) {
+    infoHtml += '<div class="o-addr-row">📍 ' + esc(o.address) +
+      (o.time ? ' · ' + esc(o.time) : '') + '</div>';
+  }
+  if (o.date) infoHtml += '<div class="o-date-row">' + esc(o.date) + '</div>';
 
-  /* ITEMS */
-  const itemsDiv = document.createElement('div'); itemsDiv.className = 'o-items';
-  if (items.length) {
-    items.forEach(i => {
-      const row = document.createElement('div'); row.className = 'o-item';
-      row.innerHTML = '<span>' + i.name + ' × ' + i.qty + '</span><span class="o-item-price">' + fmtP(i.subtotal) + '</span>';
-      itemsDiv.appendChild(row);
-    });
+  /* ACTIONS section */
+  var actHtml = '';
+  if (isDeliv && o.address) {
+    actHtml += '<button class="o-btn o-btn-maps" data-action="maps">📍 Maps</button>';
+  }
+  if (isPend) {
+    actHtml += '<button class="o-btn o-btn-done" data-action="done">✓ Livré</button>';
+    actHtml += '<button class="o-btn o-btn-cancel" data-action="cancel">✗ Annuler</button>';
   } else {
-    itemsDiv.innerHTML = '<div class="o-item" style="color:var(--ink-3);font-style:italic">Aucun article enregistré</div>';
+    actHtml += '<span class="o-status-lbl">' + esc(sLabel) + (o.status === 'delivered' ? ' ✓' : ' ✗') + '</span>';
   }
-  card.appendChild(itemsDiv);
+  actHtml += '<button class="o-btn o-btn-del" data-action="del">🗑 Suppr.</button>';
 
-  /* TOTAL */
-  const totRow = document.createElement('div'); totRow.className = 'o-total-row';
-  totRow.innerHTML = '<span>Total</span><span class="o-total-val">' + fmtP(total) + '</span>';
-  card.appendChild(totRow);
+  /* BUILD card via single innerHTML (atomic — no partial-render on error) */
+  var card = document.createElement('div');
+  card.className = 'order-card status-' + esc(o.status);
+  card.id = 'card-' + k;
+  card.dataset.key = k;
 
-  /* SEP */
-  const sep2 = document.createElement('div'); sep2.className = 'o-sep'; card.appendChild(sep2);
+  card.innerHTML =
+    '<div class="o-head">' +
+      '<div>' +
+        '<div class="o-name">' + esc(o.name || '—') + '</div>' +
+        '<div class="o-phone">' + esc(o.phone || '') + '</div>' +
+      '</div>' +
+      '<div class="o-right">' +
+        '<span class="o-badge">' + esc(sLabel) + '</span>' +
+        '<span class="o-ago" data-ts="' + (o.ts || 0) + '">' + timeAgo(o.ts) + '</span>' +
+      '</div>' +
+    '</div>' +
+    '<div class="o-sep"></div>' +
+    '<div class="o-items">' + itemsHtml + '</div>' +
+    '<div class="o-total-row"><span>Total</span><span class="o-total-val">' + fmtP(total) + '</span></div>' +
+    '<div class="o-sep"></div>' +
+    '<div class="o-info">' + infoHtml + '</div>' +
+    '<div class="o-sep"></div>' +
+    '<div class="o-actions">' + actHtml + '</div>';
 
-  /* INFO */
-  const info = document.createElement('div'); info.className = 'o-info';
-  let infoHtml = '<div class="o-mode-row">' + modeIco + ' ' +
-    (o.mode === 'livraison' ? (o.city || 'Livraison') : 'Retrait · Houdeng-Goegnies') + '</div>';
-  if (o.mode === 'livraison' && o.address)
-    infoHtml += '<div class="o-addr-row">📍 ' + o.address + (o.time ? ' · ' + o.time : '') + '</div>';
-  infoHtml += '<div class="o-date-row">' + (o.date || '') + '</div>';
-  info.innerHTML = infoHtml;
-  card.appendChild(info);
+  /* Event delegation — one listener per card */
+  card.addEventListener('click', function(e) {
+    var btn = e.target.closest ? e.target.closest('[data-action]') : null;
+    if (!btn) return;
+    var action = btn.dataset.action;
+    if (action === 'maps')   goMaps(k);
+    else if (action === 'done')   setStatus(k, 'delivered');
+    else if (action === 'cancel') setStatus(k, 'cancelled');
+    else if (action === 'del')    deleteOrder(k);
+  });
 
-  /* SEP */
-  const sep3 = document.createElement('div'); sep3.className = 'o-sep'; card.appendChild(sep3);
-
-  /* ACTIONS */
-  const actions = document.createElement('div'); actions.className = 'o-actions';
-
-  if (o.mode === 'livraison' && o.address) {
-    const bMaps = document.createElement('button');
-    bMaps.className = 'o-btn o-btn-maps'; bMaps.textContent = '📍 Maps';
-    bMaps.onclick = () => goMaps(k);
-    actions.appendChild(bMaps);
-  }
-
-  if (o.status === 'pending') {
-    const bDone = document.createElement('button');
-    bDone.className = 'o-btn o-btn-done'; bDone.textContent = '✓ Livré';
-    bDone.onclick = () => setStatus(k, 'delivered');
-    actions.appendChild(bDone);
-
-    const bCancel = document.createElement('button');
-    bCancel.className = 'o-btn o-btn-cancel'; bCancel.textContent = '✗ Annuler';
-    bCancel.onclick = () => setStatus(k, 'cancelled');
-    actions.appendChild(bCancel);
-  } else {
-    const lbl = document.createElement('span');
-    lbl.className = 'o-status-lbl';
-    lbl.textContent = (labels[o.status] || '') + (o.status === 'delivered' ? ' ✓' : ' ✗');
-    actions.appendChild(lbl);
-  }
-
-  const bDel = document.createElement('button');
-  bDel.className = 'o-btn o-btn-del'; bDel.textContent = '🗑 Suppr.';
-  bDel.onclick = () => deleteOrder(k);
-  actions.appendChild(bDel);
-
-  card.appendChild(actions);
   return card;
 }
 
