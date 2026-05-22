@@ -298,14 +298,14 @@
     /* ══════════════════════════════════════════════════════
        S0 — WELCOME
     ══════════════════════════════════════════════════════ */
-    #s0 { background: transparent; padding: 0; }
+    #s0 { background: transparent; padding: 0; overflow-y: auto; overflow-x: hidden; -webkit-overflow-scrolling: touch; }
 
     .s0-inner {
-      width: 100%; height: 100%;
+      width: 100%; min-height: 100%;
       display: flex; flex-direction: column;
       padding:
         calc(env(safe-area-inset-top,0px) + 20px) 0
-        calc(env(safe-area-inset-bottom,0px) + 32px);
+        calc(env(safe-area-inset-bottom,0px) + 48px);
     }
 
     /* Photos zone */
@@ -315,7 +315,7 @@
       overflow: hidden; min-height: 0;
     }
     .s0-photo {
-      position: absolute; width: 260px; height: 260px;
+      position: absolute; width: 300px; height: 300px;
       object-fit: contain;
       pointer-events: none; user-select: none; -webkit-user-drag: none;
       transition: transform 0.65s cubic-bezier(.4,0,.2,1), opacity 0.65s ease, filter 0.65s ease;
@@ -1116,11 +1116,11 @@ const FAN_PHOTOS = [
 
 const isSmall = window.innerHeight < 700;
 const POS = {
-  center:  {x:0,    y:0,  r:0,   s:isSmall?.78:1.00, o:1,   z:3, sh:'0 22px 44px rgba(26,13,5,0.22)', tr:true},
-  right:   {x:155,  y:22, r:15,  s:isSmall?.55:.70,  o:.90, z:2, sh:'0 12px 28px rgba(26,13,5,0.16)', tr:true},
-  left:    {x:-155, y:22, r:-15, s:isSmall?.55:.70,  o:.90, z:2, sh:'0 12px 28px rgba(26,13,5,0.16)', tr:true},
-  exit:    {x:-320, y:30, r:-25, s:isSmall?.45:.56,  o:0,   z:1, sh:'0 12px 28px rgba(26,13,5,0.16)', tr:true},
-  standby: {x:320,  y:30, r:28,  s:isSmall?.45:.56,  o:0,   z:1, sh:'0 12px 28px rgba(26,13,5,0.16)', tr:false},
+  center:  {x:0,    y:0,  r:0,   s:isSmall?.76:1.00, o:1,   z:3, sh:'0 24px 48px rgba(26,13,5,0.24)', tr:true},
+  right:   {x:168,  y:24, r:15,  s:isSmall?.53:.68,  o:.88, z:2, sh:'0 12px 28px rgba(26,13,5,0.16)', tr:true},
+  left:    {x:-168, y:24, r:-15, s:isSmall?.53:.68,  o:.88, z:2, sh:'0 12px 28px rgba(26,13,5,0.16)', tr:true},
+  exit:    {x:-350, y:32, r:-25, s:isSmall?.43:.54,  o:0,   z:1, sh:'0 12px 28px rgba(26,13,5,0.16)', tr:true},
+  standby: {x:350,  y:32, r:28,  s:isSmall?.43:.54,  o:0,   z:1, sh:'0 12px 28px rgba(26,13,5,0.16)', tr:false},
 };
 
 const fanImgs = ['fp0','fp1','fp2','fp3'].map(id => document.getElementById(id));
@@ -1180,6 +1180,19 @@ document.addEventListener('DOMContentLoaded', () => {
     const dx = e.changedTouches[0].clientX - swipeX;
     swipeX = null;
     if (Math.abs(dx) > 40) rotateFan();
+  }, { passive: true });
+
+  /* Pull-to-refresh : scroll bas → reload */
+  const s0el = document.getElementById('s0');
+  let ptr_startY = 0, ptr_active = false;
+  s0el.addEventListener('touchstart', e => {
+    ptr_startY = e.touches[0].clientY;
+    ptr_active = (s0el.scrollTop + s0el.clientHeight) >= s0el.scrollHeight - 4;
+  }, { passive: true });
+  s0el.addEventListener('touchend', e => {
+    if (!ptr_active) return;
+    const dy = ptr_startY - e.changedTouches[0].clientY; // positif = scroll vers le haut
+    if (dy > 80) location.reload();
   }, { passive: true });
 });
 </script>
