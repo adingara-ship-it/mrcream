@@ -605,8 +605,6 @@
     .cal-day.cal-selected { background: var(--ink); color: rgba(250,240,220,0.97); font-weight: 600; }
     .cal-day.cal-disabled { color: rgba(26,13,5,0.16); pointer-events: none; }
   </style>
-  <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-database-compat.js"></script>
 </head>
 <body>
 
@@ -851,17 +849,8 @@
 </div>
 
 <script>
-const FB_CONFIG = {
-  apiKey:            "AIzaSyAYX3bZdeYR8EspzcuVMCTq6FJ1On-pHoI",
-  authDomain:        "mrcream-bf88b.firebaseapp.com",
-  databaseURL:       "https://mrcream-bf88b-default-rtdb.europe-west1.firebasedatabase.app",
-  projectId:         "mrcream-bf88b",
-  storageBucket:     "mrcream-bf88b.firebasestorage.app",
-  messagingSenderId: "958147198961",
-  appId:             "1:958147198961:web:c874f2ee58b2d723d78e50"
-};
-let fbDB = null;
-try { firebase.initializeApp(FB_CONFIG); fbDB = firebase.database(); } catch(e) {}
+var SB_URL = 'https://tunrscsinxdhunodcuum.supabase.co';
+var SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR1bnJzY3NpbnhkaHVub2RjdXVtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkzNzE1NDcsImV4cCI6MjA5NDk0NzU0N30._R3Ukz5rwGtnYGYYu2pWpZjMJxw2d3X9bjZs3ioNiwo';
 
 const WA_NUMBER = '32466154468';
 const PRICE     = 6.50;
@@ -1031,20 +1020,20 @@ function sendWA() {
   } else {
     m += `*Retrait*\nLieu : Houdeng-Goegnies`;
   }
-  if (fbDB) {
-    try {
-      fbDB.ref('orders').push({
-        ts: Date.now(), name, phone,
-        items: items.map(f => ({ name: f.name, qty: f.qty, subtotal: parseFloat((f.qty*PRICE).toFixed(2)) })),
-        total: parseFloat(total.toFixed(2)),
-        mode: isDeliv ? 'livraison' : 'retrait',
-        city: isDeliv ? city : 'Houdeng-Goegnies',
-        address: isDeliv ? document.getElementById('s4-addr').value.trim() : '',
-        time: isDeliv ? document.getElementById('s4-time').value : '',
-        date: dateStr(), status: 'pending'
-      });
-    } catch(e) {}
-  }
+  fetch(SB_URL + '/rest/v1/orders', {
+    method: 'POST',
+    headers: { 'apikey': SB_KEY, 'Authorization': 'Bearer ' + SB_KEY, 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      ts: Date.now(), name: name, phone: phone,
+      items: items.map(f => ({ name: f.name, qty: f.qty, subtotal: parseFloat((f.qty*PRICE).toFixed(2)) })),
+      total: parseFloat(total.toFixed(2)),
+      mode: isDeliv ? 'livraison' : 'retrait',
+      city: isDeliv ? city : 'Houdeng-Goegnies',
+      address: isDeliv ? document.getElementById('s4-addr').value.trim() : '',
+      time: isDeliv ? document.getElementById('s4-time').value : '',
+      date: dateStr(), status: 'pending'
+    })
+  }).catch(function(){});
   window.open(`https://wa.me/${WA_NUMBER}?text=${encodeURIComponent(m)}`, '_blank');
 }
 
