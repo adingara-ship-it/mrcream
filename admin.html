@@ -293,7 +293,8 @@
 </div>
 
 <script>
-var ADMIN_PIN = '2016';
+/* PIN stocké en SHA-256 — ne jamais remettre le PIN en clair ici */
+var ADMIN_PIN_HASH = 'da6e2f539726fabd1f8cd7c9469a22b36769137975b28abc65fe2dc29e659b77';
 var SB_URL    = 'https://tunrscsinxdhunodcuum.supabase.co';
 var SB_KEY    = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR1bnJzY3NpbnhkaHVub2RjdXVtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkzNzE1NDcsImV4cCI6MjA5NDk0NzU0N30._R3Ukz5rwGtnYGYYu2pWpZjMJxw2d3X9bjZs3ioNiwo';
 
@@ -309,8 +310,12 @@ function updateDots() {
   for (var i = 0; i < 4; i++)
     document.getElementById('pd' + i).classList.toggle('filled', i < pinVal.length);
 }
-function checkPin() {
-  if (pinVal === ADMIN_PIN) {
+async function checkPin() {
+  var enc  = new TextEncoder();
+  var buf  = await crypto.subtle.digest('SHA-256', enc.encode(pinVal));
+  var hash = Array.from(new Uint8Array(buf)).map(function(b){ return b.toString(16).padStart(2,'0'); }).join('');
+
+  if (hash === ADMIN_PIN_HASH) {
     var ps = document.getElementById('pin-screen');
     ps.style.opacity = '0';
     setTimeout(function() { ps.style.display = 'none'; }, 300);
